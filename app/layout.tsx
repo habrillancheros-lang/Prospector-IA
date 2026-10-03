@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Company Finder",
-  description: "Find and compare companies with AI. Save and revisit your conversations.",
+  title: "Prospector AI",
+  description:
+    "Describe the companies you want to reach. Get a ranked shortlist with clear reasons for every match.",
 };
 
 export default function RootLayout({

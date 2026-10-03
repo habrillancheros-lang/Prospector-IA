@@ -31,14 +31,25 @@ import type { ChatSummary, SavedChat } from "@/lib/chats/types";
 const config = AuiConfig({
   suggestions: Suggestions([
     {
-      title: "Find German companies",
-      label: "with 51–200 employees",
-      prompt: "Find companies in Germany with 51–200 employees.",
+      title: "Discover software companies",
+      label: "preferably in Bangalore",
+      prompt:
+        "Find software and IT services companies, preferably in Bangalore. Rank the top 10 and explain the matches.",
     },
     {
-      title: "Explore pharmaceutical companies",
-      label: "and rank the best matches",
-      prompt: "Find pharmaceutical companies and rank the top 10 matches.",
+      title: "Explore pharmaceutical manufacturers",
+      label: "rank the top 10 matches",
+      prompt: "Find pharmaceutical manufacturing companies and rank the top 10.",
+    },
+    {
+      title: "Find mid-sized prospects",
+      label: "private software companies · 51–200 employees",
+      prompt: "Find private software companies with 51–200 employees and rank the best matches.",
+    },
+    {
+      title: "Discover manufacturers near Mumbai",
+      label: "rank matches with a location preference",
+      prompt: "Find manufacturing companies, preferably in Mumbai. Show the top 10 with reasons.",
     },
   ]),
 });
@@ -320,7 +331,7 @@ export function ChatWorkspace() {
         <div className="flex h-16 items-center justify-between px-5">
           <div className="flex items-center gap-2.5">
             <CompanyFinderMark className="size-7" />
-            <span className="text-sm font-semibold tracking-tight">Company Finder</span>
+            <span className="text-sm font-semibold tracking-tight">Prospector AI</span>
           </div>
           <Button
             variant="ghost"
@@ -436,7 +447,7 @@ export function ChatWorkspace() {
               <MenuIcon className="size-4" />
             </Button>
             <span className="truncate text-sm font-medium text-muted-foreground">
-              {chats.find((chat) => chat.id === activeId)?.title ?? "Company Finder"}
+              {chats.find((chat) => chat.id === activeId)?.title ?? "Prospector AI"}
             </span>
           </div>
           <ThemeToggle />
