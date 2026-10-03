@@ -1,7 +1,11 @@
 import { defineMcpClientConnection } from "eve/connections";
+import { productionMcpUrl } from "../../lib/deployment/config.ts";
 
 export default defineMcpClientConnection({
-  url: process.env.MCP_SERVER_URL ?? "http://localhost:3000/mcp",
+  url:
+    process.env.NODE_ENV === "production"
+      ? productionMcpUrl(process.env.MCP_SERVER_URL)
+      : (process.env.MCP_SERVER_URL ?? "http://localhost:3000/mcp"),
   description:
     "Company Finder database: find companies by industry, business activity, location, company type, employee band or rating; deterministically score search candidates into a ranked top 10; retrieve a company profile by stable ID. Discover search_companies, score_companies and get_company for company search and details requests.",
   auth: {

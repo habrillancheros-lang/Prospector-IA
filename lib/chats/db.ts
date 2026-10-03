@@ -27,7 +27,9 @@ export async function getChatDb() {
     (process.env.NODE_ENV !== "production" ? process.env.MONGODB_IMPORT_URI : undefined);
   const database = process.env.MONGODB_CHAT_DB || process.env.MONGODB_DB;
   if (!uri || !database)
-    throw new Error("Configure MONGODB_CHAT_URI and MONGODB_CHAT_DB for chat history");
+    throw new Error(
+      "Configure MONGODB_CHAT_URI and either MONGODB_DB or MONGODB_CHAT_DB for chat history",
+    );
   if (!cache.chatMongoDb) {
     const client = new MongoClient(uri, { serverSelectionTimeoutMS: 10_000, maxPoolSize: 10 });
     cache.chatMongoDb = (async () => {

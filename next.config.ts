@@ -6,4 +6,6 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@assistant-ui/eve", "@assistant-ui/react"],
 };
 
-export default withEve(withAui(nextConfig));
+export default withEve(withAui(nextConfig), {
+  eveBuildCommand: "npm run deploy:check && npm run build:eve",
+});

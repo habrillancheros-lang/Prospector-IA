@@ -5,7 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "next build --webpack",
+    "build:eve": "eve build",
+    "deploy:check": "node scripts/check-deployment.ts",
+    "deploy:build": "npm run deploy:check && npm run build",
     "start": "next start",
     "lint": "oxlint && oxfmt --check",
     "lint:fix": "oxlint --fix && oxfmt",
@@ -23,7 +26,8 @@
     "agent:try": "node --env-file=.env.local scripts/try-agent.ts",
     "agent:try-names": "node --env-file=.env.local scripts/try-company-names.ts",
     "eval:companies": "eve eval companies --url http://localhost:3000 --strict",
-    "test:evals": "node --test evals/companies/grounding.test.ts"
+    "test:evals": "node --test evals/companies/grounding.test.ts",
+    "test:deployment": "node --test lib/deployment/*.test.ts"
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "3.0.62",

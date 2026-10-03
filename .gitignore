@@ -41,6 +41,7 @@ yarn-error.log*
 /data/*.json
 # Eve template runtime artifacts
 .eve/
+/.output/
 /.workflow-data/
 *.tsbuildinfo
 next-env.d.ts
