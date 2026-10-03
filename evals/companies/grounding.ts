@@ -1,3 +1,7 @@
+export function isReturnedLocation(name: string, records: readonly { location?: string | null }[]) {
+  return records.some((record) => record.location?.split(",").some((part) => part.trim() === name));
+}
+
 export function recommendationLinesMatch(
   answer: string,
   records: readonly { name: string; score: number }[],

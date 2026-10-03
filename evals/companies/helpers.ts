@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import type { EveEvalContext, EveEvalTurn } from "eve/evals";
 import { satisfies } from "eve/evals/expect";
 import { parseCsv } from "../../lib/companies/csv.ts";
-import { recommendationLinesMatch } from "./grounding.ts";
+import { isReturnedLocation, recommendationLinesMatch } from "./grounding.ts";
 import {
   scoreOutputSchema,
   scoreInputSchema,
@@ -136,6 +136,7 @@ export function grounded(
     (name) =>
       name.length >= 8 &&
       !prompt.includes(name) &&
+      !isReturnedLocation(name, records) &&
       !(mode === "details" && JSON.stringify(data).includes(name)) &&
       !allowedNames.some((allowed) => allowed.includes(name)) &&
       answer.includes(name),

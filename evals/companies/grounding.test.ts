@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { recommendationLinesMatch } from "./grounding.ts";
+import { isReturnedLocation, recommendationLinesMatch } from "./grounding.ts";
+
+test("Dataset company names used as returned locations are not extra recommendations", () => {
+  assert.ok(isReturnedLocation("Sterling", [{ location: "Sterling" }]));
+  assert.ok(isReturnedLocation("Sterling", [{ location: "Sterling,Virginia" }]));
+  assert.equal(isReturnedLocation("Sterling", [{ location: "Mumbai" }]), false);
+  assert.equal(isReturnedLocation("Other Company", [{ location: "Sterling" }]), false);
+});
 
 const records = [
   { name: "Truncated Name...", score: 88.8888888889 },

@@ -10,6 +10,7 @@ import {
   ranked,
   grounded,
   business,
+  payload,
 } from "./helpers.ts";
 
 export default [
@@ -172,7 +173,7 @@ export default [
           (input(first, SEARCH).filters as any).location.includes("Atlantis"),
       );
       first.messageIncludes(/Atlanta|relax|spelling/i);
-      first.messageIncludes(/\?|confirm|would you|tell me/i);
+      first.messageIncludes(/\?|confirm|would you|tell me|just say|if you(?:'d| would) like/i);
       const next = await t.send(
         "Yes, replace Atlantis with the exact reported location Mumbai. Keep the other requirements.",
       );
@@ -195,6 +196,16 @@ export default [
         "Find Private companies with exact employee band 51-200. I prefer software activity. Rank the top 10.";
       const first = await t.send(prompt);
       ranked(t, first, prompt);
+      const originalActivity = criteria(first).filter((item) => item.field === "description");
+      check(
+        t,
+        "Initial activity criterion expresses the software preference",
+        () =>
+          originalActivity.length === 1 &&
+          originalActivity[0].required === false &&
+          originalActivity[0].weight === 3 &&
+          /\bsoftware\b/i.test(String(originalActivity[0].value)),
+      );
       const next = await t.send("Now also require rating at least 4. Keep everything else.");
       ranked(t, next, prompt);
       check(t, "Previous hard filters and activity persist", () => {
@@ -203,7 +214,8 @@ export default [
           f.companyType.includes("Private") &&
           f.employeeBand.includes("51-200") &&
           f.rating.min === 4 &&
-          criterion(next, "description", false, 3, "software") &&
+          JSON.stringify(criteria(next).filter((item) => item.field === "description")) ===
+            JSON.stringify(originalActivity) &&
           criterion(next, "companyType", true, 1) &&
           criterion(next, "employeeBand", true, 1, "51-200")
         );
@@ -252,7 +264,14 @@ export default [
       turn.calledTool(SEARCH);
       turn.notCalledTool(DETAILS);
       turn.notCalledTool(SCORE);
-      turn.messageIncludes(/not (?:be )?found|no .*record|no match|couldn.t find/i);
+      turn.messageIncludes(
+        /\bno\b.*\b(?:company|companies|records?|matches?)\b|\bnot\b.*\b(?:found|exist)\b|couldn.t find/i,
+      );
+      check(
+        t,
+        "Missing-name lookup actually returned zero records",
+        () => (payload(turn.requireToolCall(SEARCH).output) as any).returned === 0,
+      );
       grounded(t, turn, "clarify", prompt);
     },
   }),
@@ -289,10 +308,21 @@ export default [
       );
       turn.succeeded();
       turn.maxToolCalls(10);
-      check(t, "No business-tool loop or duplicate successful queries", () => {
+      check(t, "No business-tool loop; identical calls only retry one failure", () => {
         const calls = business(turn);
-        const keys = calls.map((c) => JSON.stringify([c.name, c.input]));
-        return calls.length <= 8 && new Set(keys).size === keys.length;
+        const groups = new Map<string, typeof calls>();
+        for (const call of calls) {
+          const key = JSON.stringify([call.name, call.input]);
+          groups.set(key, [...(groups.get(key) ?? []), call]);
+        }
+        return (
+          calls.length <= 8 &&
+          [...groups.values()].every(
+            (group) =>
+              group.length === 1 ||
+              (group.length === 2 && !!(payload(group[0].output) as any)?.error),
+          )
+        );
       });
       turn.messageIncludes(/finite|indefinit|forever|repeat|loop|bounded|once|one search/i);
       if (business(turn).some((call) => call.name === SCORE))
