@@ -43,6 +43,7 @@ import {
   ChevronRightIcon,
   CopyIcon,
   DownloadIcon,
+  LoaderCircleIcon,
   MicIcon,
   MoreHorizontalIcon,
   PencilIcon,
@@ -159,6 +160,7 @@ export const Thread: FC<ThreadProps> = ({ components = EMPTY_COMPONENTS, autoFoc
 
 const ThreadRoot: FC<{ isEmpty: boolean; autoFocus: boolean }> = ({ isEmpty, autoFocus }) => {
   const { Welcome = ThreadWelcome } = useContext(ThreadComponentsContext);
+  const isWorking = useAuiState((s) => s.thread.isRunning || s.composer.submission !== undefined);
 
   return (
     <ThreadPrimitive.Root
@@ -204,8 +206,22 @@ const ThreadRoot: FC<{ isEmpty: boolean; autoFocus: boolean }> = ({ isEmpty, aut
             <AuiIf condition={(s) => isNewChatView(s) && s.composer.isEmpty}>
               <ThreadSuggestions />
             </AuiIf>
-            <p className="text-muted-foreground/80 text-center text-[11px]">
-              Find, compare, and explore companies in one conversation.
+            <p
+              role="status"
+              aria-atomic="true"
+              className="text-muted-foreground/80 flex items-center justify-center gap-2 text-center text-[11px]"
+            >
+              {isWorking ? (
+                <>
+                  <LoaderCircleIcon
+                    aria-hidden="true"
+                    className="size-3.5 shrink-0 animate-spin motion-reduce:animate-none"
+                  />
+                  <span>This may take a moment. Thanks for your patience.</span>
+                </>
+              ) : (
+                "Find, compare, and explore companies in one conversation."
+              )}
             </p>
           </ThreadPrimitive.ViewportFooter>
         </div>
@@ -342,10 +358,11 @@ const ThreadWelcome: FC = () => {
     <div className="aui-thread-welcome-root mb-8 flex flex-col items-center px-2 text-center">
       <CompanyFinderMark className="mb-5 size-11 text-foreground/90" />
       <h1 className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-[28px] font-medium tracking-tight duration-200 sm:text-3xl motion-reduce:animate-none">
-        Which companies are you looking for?
+        Find your next great prospect.
       </h1>
       <p className="text-muted-foreground mt-3 max-w-md text-sm leading-relaxed">
-        Describe your ideal company. I’ll find and rank the best matches.
+        Describe the companies you want to reach. Get a ranked shortlist with clear reasons for
+        every match.
       </p>
     </div>
   );
