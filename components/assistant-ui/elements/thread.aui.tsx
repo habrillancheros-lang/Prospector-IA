@@ -43,7 +43,6 @@ import {
   ChevronRightIcon,
   CopyIcon,
   DownloadIcon,
-  LoaderCircleIcon,
   MicIcon,
   MoreHorizontalIcon,
   PencilIcon,
@@ -160,7 +159,6 @@ export const Thread: FC<ThreadProps> = ({ components = EMPTY_COMPONENTS, autoFoc
 
 const ThreadRoot: FC<{ isEmpty: boolean; autoFocus: boolean }> = ({ isEmpty, autoFocus }) => {
   const { Welcome = ThreadWelcome } = useContext(ThreadComponentsContext);
-  const isWorking = useAuiState((s) => s.thread.isRunning || s.composer.submission !== undefined);
 
   return (
     <ThreadPrimitive.Root
@@ -206,22 +204,8 @@ const ThreadRoot: FC<{ isEmpty: boolean; autoFocus: boolean }> = ({ isEmpty, aut
             <AuiIf condition={(s) => isNewChatView(s) && s.composer.isEmpty}>
               <ThreadSuggestions />
             </AuiIf>
-            <p
-              role="status"
-              aria-atomic="true"
-              className="text-muted-foreground/80 flex items-center justify-center gap-2 text-center text-[11px]"
-            >
-              {isWorking ? (
-                <>
-                  <LoaderCircleIcon
-                    aria-hidden="true"
-                    className="size-3.5 shrink-0 animate-spin motion-reduce:animate-none"
-                  />
-                  <span>This may take a moment. Thanks for your patience.</span>
-                </>
-              ) : (
-                "Find, compare, and explore companies in one conversation."
-              )}
+            <p className="text-muted-foreground/80 text-center text-[11px]">
+              Find, compare, and explore companies in one conversation.
             </p>
           </ThreadPrimitive.ViewportFooter>
         </div>
@@ -590,10 +574,19 @@ const AssistantMessage: FC = () => {
                 return (
                   <span
                     data-slot="aui_assistant-message-indicator"
-                    className="animate-pulse font-sans"
-                    aria-label="Assistant is working"
+                    role="status"
+                    aria-atomic="true"
+                    className="inline-flex items-center gap-2"
                   >
-                    {"●"}
+                    <span
+                      aria-hidden="true"
+                      className="shrink-0 animate-pulse font-sans motion-reduce:animate-none"
+                    >
+                      ●
+                    </span>
+                    <span className="text-muted-foreground text-sm">
+                      This may take a moment. Thanks for your patience.
+                    </span>
                   </span>
                 );
               default:
