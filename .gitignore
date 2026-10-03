@@ -35,3 +35,9 @@ yarn-error.log*
 # Note: commit an empty 'data/.gitkeep' so the folder exists
 /data/*.csv
 /data/*.json
+# Eve template runtime artifacts
+.eve/
+/.workflow-data/
+*.tsbuildinfo
+next-env.d.ts
+.turbo/
