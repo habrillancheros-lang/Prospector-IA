@@ -10,6 +10,7 @@ import { ThreadFollowupSuggestions } from "@/components/assistant-ui/elements/fo
 import { Image } from "@/components/assistant-ui/elements/image";
 import { MarkdownText } from "@/components/assistant-ui/elements/markdown-text";
 import { CompanyResults } from "@/components/assistant-ui/elements/company-results";
+import { CompanyFinderMark } from "@/components/company-finder-mark";
 import { companyTables } from "@/lib/companies/presentation";
 import { TooltipIconButton } from "@/components/assistant-ui/elements/tooltip-icon-button";
 import { Button } from "@/components/ui/button";
@@ -47,6 +48,7 @@ import {
   PencilIcon,
   PhoneIcon,
   RefreshCwIcon,
+  SearchIcon,
   SquareIcon,
   ThumbsDownIcon,
   ThumbsUpIcon,
@@ -162,21 +164,21 @@ const ThreadRoot: FC<{ isEmpty: boolean; autoFocus: boolean }> = ({ isEmpty, aut
     <ThreadPrimitive.Root
       className="aui-root aui-thread-root bg-background @container flex h-full flex-col"
       style={{
-        ["--thread-max-width" as string]: "44rem",
-        ["--composer-bg" as string]: "color-mix(in oklab, var(--color-muted) 30%, transparent)",
-        ["--composer-radius" as string]: "1rem",
-        ["--composer-padding" as string]: "8px",
+        ["--thread-max-width" as string]: "48rem",
+        ["--composer-bg" as string]: "var(--card)",
+        ["--composer-radius" as string]: "1.5rem",
+        ["--composer-padding" as string]: "12px",
       }}
     >
       <ThreadPrimitive.Viewport
         turnAnchor="top"
         data-slot="aui_thread-viewport"
-        className="relative flex flex-1 flex-col overflow-x-auto overflow-y-scroll scroll-smooth"
+        className="relative flex flex-1 flex-col overflow-x-auto overflow-y-auto scroll-smooth motion-reduce:scroll-auto"
       >
         <div
           className={cn(
             "mx-auto flex w-full max-w-(--thread-max-width) flex-1 flex-col px-4 pt-4",
-            isEmpty && "justify-center",
+            isEmpty && "justify-center pb-16 sm:pb-24",
           )}
         >
           <AuiIf condition={isNewChatView}>
@@ -202,6 +204,9 @@ const ThreadRoot: FC<{ isEmpty: boolean; autoFocus: boolean }> = ({ isEmpty, aut
             <AuiIf condition={(s) => isNewChatView(s) && s.composer.isEmpty}>
               <ThreadSuggestions />
             </AuiIf>
+            <p className="text-muted-foreground/80 text-center text-[11px]">
+              Find, compare, and explore companies in one conversation.
+            </p>
           </ThreadPrimitive.ViewportFooter>
         </div>
       </ThreadPrimitive.Viewport>
@@ -334,9 +339,13 @@ const ThreadScrollToBottom: FC = () => {
 
 const ThreadWelcome: FC = () => {
   return (
-    <div className="aui-thread-welcome-root mb-6 flex flex-col px-2">
-      <p className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-2xl font-medium tracking-tight duration-200">
-        How can I help you today?
+    <div className="aui-thread-welcome-root mb-8 flex flex-col items-center px-2 text-center">
+      <CompanyFinderMark className="mb-5 size-11 text-foreground/90" />
+      <h1 className="aui-thread-welcome-message-inner fade-in slide-in-from-bottom-1 animate-in fill-mode-both text-[28px] font-medium tracking-tight duration-200 sm:text-3xl motion-reduce:animate-none">
+        Which companies are you looking for?
+      </h1>
+      <p className="text-muted-foreground mt-3 max-w-md text-sm leading-relaxed">
+        Describe your ideal company. I’ll find and rank the best matches.
       </p>
     </div>
   );
@@ -344,7 +353,7 @@ const ThreadWelcome: FC = () => {
 
 const ThreadSuggestions: FC = () => {
   return (
-    <div className="aui-thread-welcome-suggestions flex w-full flex-col">
+    <div className="aui-thread-welcome-suggestions grid w-full gap-2 sm:grid-cols-2">
       <ThreadPrimitive.Suggestions>{() => <ThreadSuggestionItem />}</ThreadPrimitive.Suggestions>
     </div>
   );
@@ -358,19 +367,14 @@ const ThreadSuggestionItem: FC = () => {
         render={
           <button
             type="button"
-            className="aui-thread-welcome-suggestion group hover:bg-foreground/[0.03] focus-visible:ring-ring/50 flex w-full items-baseline gap-2.5 rounded-md px-2 py-2 text-start text-sm transition-colors outline-none focus-visible:ring-1 motion-reduce:transition-none"
+            className="aui-thread-welcome-suggestion group hover:bg-muted focus-visible:ring-ring/50 flex h-full w-full items-start gap-3 rounded-2xl border border-border/70 px-4 py-3 text-start text-sm transition-colors outline-none focus-visible:ring-2 motion-reduce:transition-none"
           />
         }
       >
-        <span
-          aria-hidden
-          className="text-muted-foreground/60 group-hover:text-foreground font-mono text-xs transition-colors motion-reduce:transition-none"
-        >
-          {">"}
-        </span>
-        <span className="min-w-0 flex-1 truncate">
-          <SuggestionPrimitive.Title className="aui-thread-welcome-suggestion-text-1 text-foreground" />{" "}
-          <SuggestionPrimitive.Description className="aui-thread-welcome-suggestion-text-2 text-muted-foreground empty:hidden" />
+        <SearchIcon aria-hidden="true" className="text-muted-foreground mt-0.5 size-4 shrink-0" />
+        <span className="min-w-0 flex-1">
+          <SuggestionPrimitive.Title className="aui-thread-welcome-suggestion-text-1 text-foreground block text-[13px] font-medium" />
+          <SuggestionPrimitive.Description className="aui-thread-welcome-suggestion-text-2 text-muted-foreground mt-1 block text-xs empty:hidden" />
         </span>
       </SuggestionPrimitive.Trigger>
     </div>
@@ -384,14 +388,14 @@ const Composer: FC<{ autoFocus: boolean }> = ({ autoFocus }) => {
         render={
           <div
             data-slot="aui_composer-shell"
-            className="border-foreground/10 focus-within:border-foreground/25 data-[dragging=true]:border-ring flex w-full cursor-text flex-col gap-2 rounded-(--composer-radius) border bg-(--composer-bg) p-(--composer-padding) transition-[border-color] data-[dragging=true]:border-dashed data-[dragging=true]:bg-[color-mix(in_oklab,var(--color-accent)_50%,var(--color-background))]"
+            className="border-border focus-within:border-ring data-[dragging=true]:border-ring flex w-full cursor-text flex-col gap-3 rounded-(--composer-radius) border bg-(--composer-bg) p-(--composer-padding) shadow-sm transition-[border-color] data-[dragging=true]:border-dashed data-[dragging=true]:bg-accent motion-reduce:transition-none"
           />
         }
       >
         <ComposerAttachments />
         <ComposerPrimitive.Input
-          placeholder="Send a message..."
-          className="aui-composer-input caret-primary placeholder:text-muted-foreground/60 max-h-48 min-h-10 w-full resize-none bg-transparent px-2.5 py-1 text-base leading-6 outline-none"
+          placeholder="Ask about companies…"
+          className="aui-composer-input caret-primary placeholder:text-muted-foreground max-h-48 min-h-12 w-full resize-none bg-transparent px-2.5 py-2 text-base leading-6 outline-none"
           rows={1}
           autoFocus={autoFocus}
           enterKeyHint="send"
@@ -412,7 +416,13 @@ const ComposerAction: FC = () => {
 
   return (
     <div className="aui-composer-action-wrapper relative flex items-center justify-between">
-      <ComposerAddAttachment />
+      <div className="flex items-center gap-2 px-1">
+        <ComposerAddAttachment />
+        <span className="text-muted-foreground inline-flex items-center gap-1.5 px-1 text-xs">
+          <SearchIcon className="size-3.5" aria-hidden="true" />
+          Company search
+        </span>
+      </div>
       <div className="flex items-center gap-1.5">
         <AuiIf condition={(s) => s.thread.capabilities.dictation}>
           <AuiIf condition={(s) => s.composer.dictation == null}>
@@ -464,12 +474,12 @@ const ComposerAction: FC = () => {
                 type="button"
                 variant="default"
                 size="icon"
-                className="aui-composer-send size-7 rounded-full"
+                className="aui-composer-send size-9 rounded-full"
                 aria-label="Send message"
               />
             }
           >
-            <ArrowUpIcon className="aui-composer-send-icon size-4" />
+            <ArrowUpIcon className="aui-composer-send-icon size-5" />
           </ComposerPrimitive.Send>
         </AuiIf>
         <AuiIf
@@ -484,7 +494,7 @@ const ComposerAction: FC = () => {
                 type="button"
                 variant="default"
                 size="icon"
-                className="aui-composer-cancel size-7 rounded-full"
+                className="aui-composer-cancel size-9 rounded-full"
                 aria-label={isSending ? "Cancel sending" : "Stop generating"}
               />
             }

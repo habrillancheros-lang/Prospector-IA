@@ -85,6 +85,26 @@ export async function findChat(id: string, owner: string) {
   return (await getChatDb()).collection<ChatDocument>("chats").findOne({ _id: id, owner });
 }
 
+export async function deleteChat(id: string, owner: string) {
+  const db = await getChatDb();
+  const session = db.client.startSession();
+  try {
+    return await session.withTransaction(
+      async () => {
+        const result = await db
+          .collection<ChatDocument>("chats")
+          .deleteOne({ _id: id, owner }, { session });
+        if (result.deletedCount === 0) return false;
+        await db.collection<EventDocument>("chat_events").deleteMany({ chatId: id }, { session });
+        return true;
+      },
+      { timeoutMS: 10_000 },
+    );
+  } finally {
+    await session.endSession();
+  }
+}
+
 export async function listChats(owner: string, before?: { date: Date; id: string }) {
   const db = await getChatDb();
   const chats = await db
@@ -141,25 +161,42 @@ export async function saveChatEvents(
 ) {
   if (events.length === 0) return;
   const db = await getChatDb();
-  await db.collection<EventDocument>("chat_events").bulkWrite(
-    events.map((event, offset) => ({
-      updateOne: {
-        filter: { _id: `${chatId}:${startIndex + offset}` },
-        update: { $setOnInsert: { chatId, index: startIndex + offset, event } },
-        upsert: true,
-      },
-    })),
-    { ordered: true },
-  );
   // Reopening old history must not move it above a newly active chat.
   const at = events
     .map((event) => new Date(event.meta.at))
     .filter((date) => Number.isFinite(date.getTime()));
-  if (at.length)
-    await db.collection<ChatDocument>("chats").updateOne(
-      { _id: chatId },
-      {
-        $max: { updatedAt: new Date(Math.max(...at.map((date) => date.getTime()))) },
+  const session = db.client.startSession();
+  try {
+    await session.withTransaction(
+      async () => {
+        // Both archive writes and deletion write the parent in a transaction.
+        // The increment also locks replay-only batches whose timestamp is unchanged,
+        // preventing an in-flight stream from recreating deleted message history.
+        const chat = await db.collection<ChatDocument>("chats").updateOne(
+          { _id: chatId },
+          {
+            $inc: { eventWriteVersion: 1 },
+            ...(at.length
+              ? { $max: { updatedAt: new Date(Math.max(...at.map((date) => date.getTime()))) } }
+              : {}),
+          },
+          { session },
+        );
+        if (chat.matchedCount === 0) return;
+        await db.collection<EventDocument>("chat_events").bulkWrite(
+          events.map((event, offset) => ({
+            updateOne: {
+              filter: { _id: `${chatId}:${startIndex + offset}` },
+              update: { $setOnInsert: { chatId, index: startIndex + offset, event } },
+              upsert: true,
+            },
+          })),
+          { ordered: true, session },
+        );
       },
+      { timeoutMS: 10_000 },
     );
+  } finally {
+    await session.endSession();
+  }
 }
