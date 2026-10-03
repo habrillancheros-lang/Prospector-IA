@@ -45,7 +45,7 @@ export async function GET(request: Request) {
   } catch {
     return NextResponse.json(
       {
-        error: "Chat history is unavailable. Check the chat database configuration and connection.",
+        error: "Chat history is temporarily unavailable. Please retry.",
       },
       { status: 503 },
     );
