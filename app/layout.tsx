@@ -12,11 +12,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className="h-dvh">
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){var theme;try{theme=localStorage.getItem("company-finder-theme")}catch(e){}var dark=theme==="dark"||(theme!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);document.documentElement.classList.toggle("dark",dark);document.documentElement.style.colorScheme=dark?"dark":"light"})()`,
+            __html: `(function(){var theme;try{theme=localStorage.getItem("company-finder-theme")}catch(e){}var dark=theme!=="light";document.documentElement.classList.toggle("dark",dark);document.documentElement.style.colorScheme=dark?"dark":"light"})()`,
           }}
         />
         {children}

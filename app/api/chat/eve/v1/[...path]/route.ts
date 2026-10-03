@@ -52,6 +52,19 @@ async function proxy(request: Request, context: Context) {
       cache: "no-store",
       redirect: "manual",
     });
+    const tail = response.headers.get("x-eve-stream-tail-index");
+    // Eve's tail is the last event index; the resume cursor is the next index.
+    if (isStream && response.ok && tail !== null && Number(tail) + 1 < index) {
+      await response.body?.cancel();
+      return Response.json(
+        {
+          code: "session_not_active",
+          error: "This saved conversation's live session is no longer available.",
+          ok: false,
+        },
+        { status: 409 },
+      );
+    }
     if (isCreate && response.ok) {
       const accepted = (await response.clone().json()) as { sessionId: string };
       await createChat(accepted.sessionId, owner, chatTitle(JSON.parse(body!).message));
@@ -120,7 +133,7 @@ async function proxy(request: Request, context: Context) {
     return new Response(stream, { status: response.status, headers: forwarded });
   } catch {
     return Response.json(
-      { error: "Unable to save or load chat. Check the chat database connection." },
+      { error: "Unable to save or load this chat. Please retry." },
       { status: 503 },
     );
   }

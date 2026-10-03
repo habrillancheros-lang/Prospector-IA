@@ -5,7 +5,7 @@ import { MoonIcon, SunIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function ThemeToggle() {
-  const [isDark, setIsDark] = useState(false);
+  const [isDark, setIsDark] = useState(true);
 
   useEffect(() => {
     setIsDark(document.documentElement.classList.contains("dark"));
@@ -25,14 +25,14 @@ export function ThemeToggle() {
 
   return (
     <Button
-      variant="outline"
-      size="sm"
+      variant="ghost"
+      size="icon"
+      className="text-muted-foreground rounded-full"
       onClick={toggleTheme}
       aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
       title={isDark ? "Switch to light mode" : "Switch to dark mode"}
     >
       {isDark ? <SunIcon aria-hidden="true" /> : <MoonIcon aria-hidden="true" />}
-      {isDark ? "Light mode" : "Dark mode"}
     </Button>
   );
 }
